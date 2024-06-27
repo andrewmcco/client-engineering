@@ -271,7 +271,21 @@
         </button>
       </div>
     </div>
-
+// Place this DIV where the custom button should be displayed
+<div class="salemove-button"></div>
     
   </body>
+  <footer>
+            //Place the following script in the footer
+        sm.getApi().then(
+          function(salemoveApi) {
+            salemoveApi.setupContactOperatorButton({
+              withOperatorsHtml: "<img src='assets/img/operatorAvailable.png'>",
+              withoutOperatorsHtml: '',
+              withoutOperatorsCallback: function() {}
+            });
+          },
+          function(err) {}
+        );
+  </footer>
 </html>
