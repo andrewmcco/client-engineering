@@ -276,7 +276,8 @@
     
   </body>
   <footer>
-            //Place the following script in the footer
+    <script>    
+    //Place the following script in the footer
         sm.getApi().then(
           function(salemoveApi) {
             salemoveApi.setupContactOperatorButton({
@@ -287,5 +288,6 @@
           },
           function(err) {}
         );
+      </script>   
   </footer>
 </html>
