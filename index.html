@@ -2,134 +2,166 @@
 <html>
   <head>
     <script async src="https://api.beta.glia.com/salemove_integration.js"></script>
-  <title>CE Testing Site</title>
-  <link rel="icon" type="image/x-icon" href="images/favicon.ico">
-    <style>
-    h1  {color:#7C19DD;}
-    h1  {font-family:roboto;}
-    img {
-      width:50%;
-    }
-    </style>
-    <script>function findQueuingInstructionsElement() {
+    <title>CE Testing Site</title>
+    <link rel="icon" type="image/x-icon" href="images/favicon.ico">
+      <style>
+      h1  {color:#7C19DD;}
+      h1  {font-family:roboto;}
+      img {
+        width:50%;
+      }
+      </style>
+    <script>
+      sm.getApi({version: 'v1'}).then(function(glia) {
+        function onQueueStateUpdate(queueState) {
+          const element = document.querySelector('[data-sm-show-media-selection-on]');
+          if (queueState.state !== queueState.QUEUE_STATES.CAN_QUEUE) {
+            element.style.display = 'none';
+          } else {
+            element.style.display = 'inline';
+          }
+        }
+        glia.addEventListener(glia.EVENTS.QUEUE_STATE_UPDATE, onQueueStateUpdate);
+      });
+    </script>
+    <script>
+      // The following functions define selectors for the example UI
+      // Replace these with selectors for your UI.
+      
+      function findQueuingInstructionsElement() {
         return document.querySelector('div.instructions');
       }
+      
       function findQueueElement(queueName) {
-        return document.querySelector("div.queue[queue_name='" + Sales + "']");
+        return document.querySelector("div.queue[queue_name='" + queueName + "']");
       }
+      
       function findAllQueueElements() {
         return document.querySelectorAll('div.queue');
       }
+      
       function findAllQueueMediaButtons() {
         return document.querySelectorAll('div.queue > button.media_button');
       }
+      
       function findMediaButtonsForQueue(queueElement) {
         return queueElement.querySelectorAll('button.media_button');
       }
+      
       function findCancelButton() {
         return document.querySelector('button.cancel');
       }
+      
       function getMediaButtonQueueName(button) {
         return button.parentElement.getAttribute('queue_name');
       }
+      
       function getButtonMedium(button) {
         return button.getAttribute('medium');
       }
-        function hide(element) {
+    </script>
+    <script>
+      // The following functions define simplistic user interface transitions.
+      // Replace these functions with functions that fit your user interface.
+      
+      function hide(element) {
         element.style.display = 'none';
       }
       
       function show(element) {
         element.style.display = 'block';
       }
-        function showCanQueue(queueElement, queueMedias) {
-          // Queue is open, a set of medias available
-          queueElement.style['text-decoration'] = 'none';
-          updateQueueAvailableMedia(queueElement, queueMedias);
-        }
-        
-        function showCannotQueue(queueElement) {
-          // Queue is closed
-          queueElement.style['text-decoration'] = 'line-through';
-          updateQueueAvailableMedia(queueElement, []); // Disables all media buttons
-        }
-        
-        function showCannotQueueAnywhere() {
-          findAllQueueElements().forEach(showCannotQueue);
-        }
-        
-        function showFailedToQueueView(error) {
-          findQueuingInstructionsElement().innerText = 'Sorry! Currently unavailable.';
-        }
-        
-        function showCanQueueView() {
-          findQueuingInstructionsElement().innerHTML =
-            'Please select a queue and click a media button';
-        }
-        
-        function showAlreadyQueuedView() {
-          findQueuingInstructionsElement().innerText =
-            'Please wait, you will be connected shortly';
-        }
-        
-        function showCannotQueueView() {
-          findQueuingInstructionsElement().innerText = 'Queueing is currently disabled';
-        }
-        
-        function updateQueueAvailableMedia(queueElement, medias) {
-          findMediaButtonsForQueue(queueElement).forEach(function(button) {
-            var mediaUnavailable = medias.indexOf(getButtonMedium(button)) === -1;
-            button.disabled = mediaUnavailable;
-          });
-        }
-  // The following functions integrate an user interface with multiple queue
-  // buttons with Glia SDK.
-
-  var queueTicket; // Reference to an ongoing QueueTicket. Used for cancellation.
-  
-  // Bind clicks on queue buttons with Glia SDK
-  function listenForQueueButtonClicks(salemove, queues) {
-    findAllQueueMediaButtons().forEach(function(mediaButton) {
-      // Gather properties from UI element
-      var buttonQueueName = getMediaButtonQueueName(mediaButton);
-      var buttonMedium = getButtonMedium(mediaButton);
-      // Find queue ID by matching the queue name to button queue name
-      var queueId = queues
-        .filter(function(queue) {
-          return queue.name === buttonQueueName;
-        })
-        .map(function(queue) {
-          return queue.id;
-        })[0];
-  
-      if (queueId === undefined) {
-        throw new Error(
-          'Queue button present, but queue not defined in Glia. Queue name: ' +
-            buttonQueueName
-        );
+      
+      function showCanQueue(queueElement, queueMedias) {
+        // Queue is open, a set of medias available
+        queueElement.style['text-decoration'] = 'none';
+        updateQueueAvailableMedia(queueElement, queueMedias);
       }
-  
-      // Queue upon button click
-      mediaButton.addEventListener('click', function() {
-        if (buttonMedium === 'phone') {
-          // Read the visitor's phone number from a separate UI element or from
-          // another information source.
-          var visitorPhoneNumber = '+11111111111';
-          salemove
-            .queueForEngagement(buttonMedium, {
-              queueId: queueId,
-              phoneNumber: visitorPhoneNumber
+      
+      function showCannotQueue(queueElement) {
+        // Queue is closed
+        queueElement.style['text-decoration'] = 'line-through';
+        updateQueueAvailableMedia(queueElement, []); // Disables all media buttons
+      }
+      
+      function showCannotQueueAnywhere() {
+        findAllQueueElements().forEach(showCannotQueue);
+      }
+      
+      function showFailedToQueueView(error) {
+        findQueuingInstructionsElement().innerText = 'Sorry! Currently unavailable.';
+      }
+      
+      function showCanQueueView() {
+        findQueuingInstructionsElement().innerHTML =
+          'Please select a queue and click a media button';
+      }
+      
+      function showAlreadyQueuedView() {
+        findQueuingInstructionsElement().innerText =
+          'Please wait, you will be connected shortly';
+      }
+      
+      function showCannotQueueView() {
+        findQueuingInstructionsElement().innerText = 'Queueing is currently disabled';
+      }
+      
+      function updateQueueAvailableMedia(queueElement, medias) {
+        findMediaButtonsForQueue(queueElement).forEach(function(button) {
+          var mediaUnavailable = medias.indexOf(getButtonMedium(button)) === -1;
+          button.disabled = mediaUnavailable;
+        });
+      }
+    </script>
+    <script>
+      // The following functions integrate an user interface with multiple queue
+      // buttons with Glia SDK.
+      
+      var queueTicket; // Reference to an ongoing QueueTicket. Used for cancellation.
+      
+      // Bind clicks on queue buttons with Glia SDK
+      function listenForQueueButtonClicks(salemove, queues) {
+        findAllQueueMediaButtons().forEach(function(mediaButton) {
+          // Gather properties from UI element
+          var buttonQueueName = getMediaButtonQueueName(mediaButton);
+          var buttonMedium = getButtonMedium(mediaButton);
+          // Find queue ID by matching the queue name to button queue name
+          var queueId = queues
+            .filter(function(queue) {
+              return queue.name === buttonQueueName;
             })
-            .catch(showFailedToQueueView);
-        } else {
-          salemove
-            .queueForEngagement(buttonMedium, {queueId: queueId})
-            .catch(showFailedToQueueView);
-        }
-      });
-    });
-  }
-
+            .map(function(queue) {
+              return queue.id;
+            })[0];
+      
+          if (queueId === undefined) {
+            throw new Error(
+              'Queue button present, but queue not defined in Glia. Queue name: ' +
+                buttonQueueName
+            );
+          }
+      
+          // Queue upon button click
+          mediaButton.addEventListener('click', function() {
+            if (buttonMedium === 'phone') {
+              // Read the visitor's phone number from a separate UI element or from
+              // another information source.
+              var visitorPhoneNumber = '+11111111111';
+              salemove
+                .queueForEngagement(buttonMedium, {
+                  queueId: queueId,
+                  phoneNumber: visitorPhoneNumber
+                })
+                .catch(showFailedToQueueView);
+            } else {
+              salemove
+                .queueForEngagement(buttonMedium, {queueId: queueId})
+                .catch(showFailedToQueueView);
+            }
+          });
+        });
+      }
+      
       // Bind click on cancel button with QueueTicket cancellation
       function listenForCancel() {
         findCancelButton().addEventListener('click', function() {
@@ -206,25 +238,25 @@
         });
       });
     </script>
+   
   </head>
 
   <body>
     <center>
       <img src="images/Full LOGO_black.png" alt="CE logo" style="width:750px">
       <div>
+        
+        <h2 style="text-align:center;">Welcome to our testing site!</h2>
+      </div>
     </center>
 
-    <h2 style="text-align:center;">Welcome to our testing site!</h2>
-
-<!--
-The link opens the media selection modal when the visitor clicks on it
--->
-<a data-sm-show-media-selection-on="click" href="javascript:void(0);">
-  <button>Contact us!</button>
-</a>
-
-
-    
+      <!--
+      The link opens the media selection modal when the visitor clicks on it
+      -->
+      <a data-sm-show-media-selection-on="click" href="javascript:void(0);">
+        Contact us!
+      </a>
+    <div>
       <div class="instructions"></div>
       <button class="cancel">Leave queue</button>
       <div class="queue" queue_name="Sales">
@@ -239,5 +271,7 @@ The link opens the media selection modal when the visitor clicks on it
         </button>
       </div>
     </div>
+
+    
   </body>
 </html>
